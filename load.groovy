@@ -265,7 +265,7 @@ INewLinkProvider provider= new INewLinkProvider() {
 			if(simp.isVirtual()){
 				println "\n\n\nDevice is in virtual mode!\n\n\n"
 			}
-			println "Connecting new device: "+d
+			println "Connecting new device: "+searchName
 			DeviceManager.addDeviceAddedListener(new MyDeviceListener(searchName))
 			return d
 		})
