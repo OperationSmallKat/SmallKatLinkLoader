@@ -6,7 +6,11 @@ import com.neuronrobotics.sdk.addons.kinematics.AbstractRotoryLink
 import com.neuronrobotics.sdk.addons.kinematics.INewLinkProvider
 import com.neuronrobotics.sdk.addons.kinematics.LinkConfiguration
 import com.neuronrobotics.sdk.addons.kinematics.LinkFactory
+import com.neuronrobotics.sdk.addons.kinematics.MobileBase
+import com.neuronrobotics.sdk.addons.kinematics.imu.IMUUpdate
+import com.neuronrobotics.sdk.common.BowlerAbstractDevice
 import com.neuronrobotics.sdk.common.DeviceManager
+import com.neuronrobotics.sdk.common.IDeviceAddedListener
 import com.neuronrobotics.sdk.common.NonBowlerDevice
 import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs;
 import edu.wpi.SimplePacketComs.*;
@@ -95,8 +99,8 @@ public class SimpleServoUDPImuVirt extends VirtualDeviceSimple {
 	}
 }
 public class HIDSimpleComsDevice extends NonBowlerDevice{
-	def simple;
-	def simpleServo;
+	AbstractSimpleComsDevice simple;
+	AbstractSimpleComsDevice simpleServo;
 	public HIDSimpleComsDevice(def simp, def servo){
 		simple = simp
 		simpleServo=servo
@@ -201,7 +205,40 @@ public class HIDRotoryLink extends AbstractRotoryLink{
 	}
 
 }
+class MyDeviceListener implements IDeviceAddedListener{
+	String searchName
+	public MyDeviceListener(String searchName){
+		this.searchName=searchName
+	}
+	public void onNewDeviceAdded(BowlerAbstractDevice bad) {
+		// wait for the mobile base to be added to the device manager then add the event listenr for the IMU
+		if(MobileBase.class.isInstance(bad)) {
+			println "Adding the IMU callback from the device manager listener"
+			HIDSimpleComsDevice d = DeviceManager.getSpecificDevice( searchName)
+			MobileBase m =(MobileBase)bad;
+			d.simple.addEvent(1804, {
+					double[] imuDataValues = d.simple.getImuData()
+					m.getImu()
+					.setHardwareState(
+							new IMUUpdate(
+								-imuDataValues[9],	-imuDataValues[11],	-imuDataValues[10],
+							   imuDataValues[3],//Double rotxAcceleration,
+							   imuDataValues[4],//Double rotyAcceleration,
+							   imuDataValues[5],//Double rotzAcceleration
+					   ))
+					
+					
+			   });
+		   
+			DeviceManager.removeDeviceAddedListener(this);
+		}
+	}
 
+	public void onDeviceRemoved(BowlerAbstractDevice bad) {
+		// TODO Auto-generated method stub
+		
+	}
+}
 INewLinkProvider provider= new INewLinkProvider() {
 	public AbstractLink generate(LinkConfiguration conf) {
 		String searchName = conf.getDeviceScriptingName();
@@ -229,6 +266,7 @@ INewLinkProvider provider= new INewLinkProvider() {
 				println "\n\n\nDevice is in virtual mode!\n\n\n"
 			}
 			println "Connecting new device: "+d
+			DeviceManager.addDeviceAddedListener(new MyDeviceListener(searchName))
 			return d
 		})
 		
