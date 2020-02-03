@@ -1,4 +1,4 @@
-@GrabResolver(name='nr', root='https://oss.sonatype.org/content/repositories/staging/')
+@GrabResolver(name='nr', root='https://oss.sonatype.org/service/local/repositories/releases/content/')
 @Grab(group='com.neuronrobotics', module='SimplePacketComsJava', version='0.12.0')
 
 import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
