@@ -1,47 +1,41 @@
 @GrabResolver(name='nr', root='https://oss.sonatype.org/service/local/repositories/releases/content/')
 @Grab(group='com.neuronrobotics', module='SimplePacketComsJava', version='0.12.0')
+@Grab(group='com.neuronrobotics', module='SimplePacketComsJava-HID', version='0.13.0')
+@Grab(group='org.hid4java', module='hid4java', version='0.5.0')
 
-import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
+import edu.wpi.SimplePacketComs.*;
+import edu.wpi.SimplePacketComs.phy.*;
+
+import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
 import com.neuronrobotics.sdk.addons.kinematics.AbstractRotoryLink
-import com.neuronrobotics.sdk.addons.kinematics.INewLinkProvider
 import com.neuronrobotics.sdk.addons.kinematics.LinkConfiguration
 import com.neuronrobotics.sdk.addons.kinematics.LinkFactory
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
-import com.neuronrobotics.sdk.addons.kinematics.imu.IMUUpdate
-import com.neuronrobotics.sdk.common.BowlerAbstractDevice
+import com.neuronrobotics.sdk.addons.kinematics.imu.*;
 import com.neuronrobotics.sdk.common.DeviceManager
-import com.neuronrobotics.sdk.common.IDeviceAddedListener
 import com.neuronrobotics.sdk.common.NonBowlerDevice
-import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs;
+
+import edu.wpi.SimplePacketComs.BytePacketType;
+import edu.wpi.SimplePacketComs.FloatPacketType;
 import edu.wpi.SimplePacketComs.*;
+import edu.wpi.SimplePacketComs.phy.UDPSimplePacketComs;
+import edu.wpi.SimplePacketComs.device.gameController.*;
+import edu.wpi.SimplePacketComs.device.*
 
-public class SimpleServoUDPServo extends UDPSimplePacketComs {
+public class SimpleServoHID extends HIDSimplePacketComs {
 	private PacketType servos = new edu.wpi.SimplePacketComs.BytePacketType(1962, 64);
+	private PacketType imuData = new edu.wpi.SimplePacketComs.FloatPacketType(1804, 64);
+	private final double[] status = new double[12];
 	private final byte[] data = new byte[16];
-	public SimpleServoUDPServo(def address) {
-		super(address);
+	
+	public SimpleServoHID(int vidIn, int pidIn) {
+		super(vidIn, pidIn);
 		servos.waitToSendMode();
 		addPollingPacket(servos);
+		addPollingPacket(imuData);
 		addEvent(1962, {
 			writeBytes(1962, data);
 		});
-	}
-	public byte[] getDataUp() {
-		//return servos.getUpstream();
-		return data;
-	}
-	public byte[] getData() {
-		return data;
-	}
-}
-
-public class SimpleServoUDPImu extends UDPSimplePacketComs {
-	private PacketType imuData = new edu.wpi.SimplePacketComs.FloatPacketType(1804, 64);
-	private final double[] status = new double[12];
-	
-	public SimpleServoUDPImu(def address) {
-		super(address);
-		addPollingPacket(imuData);
 		addEvent(1804, {
 			readFloats(1804,status);
 		});
@@ -49,55 +43,14 @@ public class SimpleServoUDPImu extends UDPSimplePacketComs {
 	public double[] getImuData() {
 		return status;
 	}
-}
-public class VirtualDeviceSimple extends AbstractSimpleComsDevice{
-	public  int read(byte[] message, int howLongToWaitBeforeTimeout) {
-	}
-
-	public  int write(byte[] message, int length, int howLongToWaitBeforeTimeout){
-	}
-
-	public  boolean disconnectDeviceImp(){
-	}
-
-	public  boolean connectDeviceImp(){
-		return false;
-	}
-}
-
-public class SimpleServoUDPServoVirt extends VirtualDeviceSimple {
-	private PacketType servos = new edu.wpi.SimplePacketComs.BytePacketType(1962, 64);
-	private final byte[] data = new byte[16];
-	public SimpleServoUDPServoVirt() {
-		servos.waitToSendMode();
-		addPollingPacket(servos);
-		addEvent(1962, {
-			writeBytes(1962, data);
-		});
-	}
-	public byte[] getDataUp() {
-		//return servos.getUpstream();
-		return data;
-	}
 	public byte[] getData() {
 		return data;
 	}
+	public byte[] getDataUp() {
+		return servos.getUpstream();
+	}
 }
 
-public class SimpleServoUDPImuVirt extends VirtualDeviceSimple {
-	private PacketType imuData = new edu.wpi.SimplePacketComs.FloatPacketType(1804, 64);
-	private final double[] status = new double[12];
-	
-	public SimpleServoUDPImuVirt() {
-		addPollingPacket(imuData);
-		addEvent(1804, {
-			readFloats(1804,status);
-		});
-	}
-	public double[] getImuData() {
-		return status;
-	}
-}
 public class HIDSimpleComsDevice extends NonBowlerDevice{
 	AbstractSimpleComsDevice simple;
 	AbstractSimpleComsDevice simpleServo;
@@ -242,24 +195,28 @@ class MyDeviceListener implements IDeviceAddedListener{
 INewLinkProvider provider= new INewLinkProvider() {
 	public AbstractLink generate(LinkConfiguration conf) {
 		String searchName = conf.getDeviceScriptingName();
+		int vid=0x16C0
+		int pid=0x0486
+		if(searchName.size()>8){
+			String deviceID = searchName.substring(searchName.size()-8,searchName.size())
+			String VIDStr = deviceID.substring(0,4)
+			String PIDStr = deviceID.substring(4,8)
+			try{
+				vid = Integer.parseInt(VIDStr,16); 
+				pid = Integer.parseInt(PIDStr,16); 
+				println "Searching for Device at "+VIDStr+" "+PIDStr
+			}catch(Throwable t){
+				BowlerStudio.printStackTrace(t)
+			}
+			
+		}
 		def dev = DeviceManager.getSpecificDevice( searchName,{
 			//If the device does not exist, prompt for the connection
 			def simp = null;
 			def srv = null
-			HashSet<InetAddress> addresses = UDPSimplePacketComs.getAllAddresses(searchName);
-			if (addresses.size() > 1){
-				println "Servo Servers at "+addresses
-				simp = new SimpleServoUDPImu(addresses.toArray()[0])
-				simp.setReadTimeout(20);
-				srv = new SimpleServoUDPServo(addresses.toArray()[0])
-				srv.setReadTimeout(20);
-				
-			}else {
-				simp = new SimpleServoUDPImuVirt()
-				simp.setReadTimeout(20);
-				srv = new SimpleServoUDPServoVirt()
-				srv.setReadTimeout(20);
-			}
+			
+			simp = new SimpleServoHID(vid ,pid) 
+			srv=simp
 			HIDSimpleComsDevice d = new HIDSimpleComsDevice(simp,srv)
 			d.connect(); // Connect to it.
 			if(simp.isVirtual()){
@@ -276,7 +233,7 @@ INewLinkProvider provider= new INewLinkProvider() {
 }
 
 if(args==null)
-	args=["hidfast"]
+	args=["hidSimplePacketLink"]
 LinkFactory.addLinkProvider(args[0], provider)
 
 return provider
