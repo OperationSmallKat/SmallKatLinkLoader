@@ -1,4 +1,6 @@
 @GrabResolver(name='nr', root='https://oss.sonatype.org/service/local/repositories/releases/content/')
+@GrabResolver(name='mvnRepository', root='http://central.maven.org/maven2/')
+@Grab(group='net.java.dev.jna', module='jna', version='4.2.2')
 @Grab(group='com.neuronrobotics', module='SimplePacketComsJava', version='0.12.0')
 @Grab(group='com.neuronrobotics', module='SimplePacketComsJava-HID', version='0.13.0')
 @Grab(group='org.hid4java', module='hid4java', version='0.5.0')
