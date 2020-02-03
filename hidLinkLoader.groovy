@@ -204,7 +204,7 @@ INewLinkProvider provider= new INewLinkProvider() {
 			try{
 				vid = Integer.parseInt(VIDStr,16); 
 				pid = Integer.parseInt(PIDStr,16); 
-				println "Searching for Device at "+VIDStr+" "+PIDStr
+				//println "Searching for Device at "+VIDStr+" "+PIDStr
 			}catch(Throwable t){
 				BowlerStudio.printStackTrace(t)
 			}
