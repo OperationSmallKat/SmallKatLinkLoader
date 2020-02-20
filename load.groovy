@@ -247,7 +247,8 @@ INewLinkProvider provider= new INewLinkProvider() {
 			def simp = null;
 			def srv = null
 			HashSet<InetAddress> addresses = UDPSimplePacketComs.getAllAddresses(searchName);
-			if (addresses.size() > 1){
+			println addresses
+			if (addresses.size() >= 1){
 				println "Servo Servers at "+addresses
 				simp = new SimpleServoUDPImu(addresses.toArray()[0])
 				simp.setReadTimeout(20);
