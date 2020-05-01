@@ -90,7 +90,7 @@ public class HIDSimpleComsDevice extends NonBowlerDevice{
 		simpleServo.servos.pollingMode();
 	}
 	int getValue(int i){
-		if(simpleServo.getDataUp()[i]>0)
+		if(simpleServo.getDataUp()[i]>=0)
 			return simpleServo.getDataUp()[i]
 		return ((int)simpleServo.getDataUp()[i])+256
 	}
