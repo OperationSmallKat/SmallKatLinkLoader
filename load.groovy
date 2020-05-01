@@ -119,6 +119,14 @@ public class HIDSimpleComsDevice extends NonBowlerDevice{
 		simpleServo.connect()
 	}
 	void setValue(int i,int position){
+		if(position<0){
+			println "Link commanded to invalid position! "+position
+			position=0;	
+		}	
+		if(position>180){
+			println "Link commanded to invalid position! "+position
+			position=180;	
+		}		
 		simpleServo.getData()[i]=(byte)position;
 		simpleServo.servos.pollingMode();
 	}

@@ -9,7 +9,9 @@ import edu.wpi.SimplePacketComs.*;
 import edu.wpi.SimplePacketComs.phy.*;
 
 import com.neuronrobotics.bowlerstudio.creature.MobileBaseLoader
+import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
 import com.neuronrobotics.sdk.addons.kinematics.AbstractRotoryLink
+import com.neuronrobotics.sdk.addons.kinematics.INewLinkProvider
 import com.neuronrobotics.sdk.addons.kinematics.LinkConfiguration
 import com.neuronrobotics.sdk.addons.kinematics.LinkFactory
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
