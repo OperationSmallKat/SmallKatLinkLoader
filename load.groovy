@@ -1,5 +1,5 @@
 @GrabResolver(name='nr', root='https://oss.sonatype.org/service/local/repositories/releases/content/')
-@Grab(group='com.neuronrobotics', module='SimplePacketComsJava', version='0.12.0')
+@Grab(group='com.neuronrobotics', module='SimplePacketComsJava', version='1.0.0')
 
 import com.neuronrobotics.sdk.addons.kinematics.AbstractLink
 import com.neuronrobotics.sdk.addons.kinematics.AbstractRotoryLink
@@ -177,7 +177,7 @@ public class HIDRotoryLink extends AbstractRotoryLink{
 			}
 			
 		})
-		
+		setTargetAngle(0);// sero the servo to start
 	}
 
 	/* (non-Javadoc)
