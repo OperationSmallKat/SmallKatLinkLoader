@@ -17,7 +17,7 @@ import edu.wpi.SimplePacketComs.*;
 
 public class SimpleServoUDPServo extends UDPSimplePacketComs {
 	private PacketType servos = new edu.wpi.SimplePacketComs.BytePacketType(1962, 64);
-	private final byte[] data = new byte[16];
+	private final byte[] data = new byte[25];
 	public SimpleServoUDPServo(def address) {
 		super(address);
 		servos.waitToSendMode();
@@ -67,7 +67,7 @@ public class VirtualDeviceSimple extends AbstractSimpleComsDevice{
 
 public class SimpleServoUDPServoVirt extends VirtualDeviceSimple {
 	private PacketType servos = new edu.wpi.SimplePacketComs.BytePacketType(1962, 64);
-	private final byte[] data = new byte[16];
+	private final byte[] data = new byte[25];
 	public SimpleServoUDPServoVirt() {
 		servos.waitToSendMode();
 		addPollingPacket(servos);
