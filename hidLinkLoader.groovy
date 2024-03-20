@@ -192,6 +192,7 @@ class MyDeviceListener implements IDeviceAddedListener{
 							   imuDataValues[3],//Double rotxAcceleration,
 							   imuDataValues[4],//Double rotyAcceleration,
 							   imuDataValues[5],//Double rotzAcceleration
+							   System.currentTimeMillis()
 					   ))
 					
 					
